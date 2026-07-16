@@ -1,0 +1,14 @@
+/terraform-provider-ranchervaultsecret
+*.zip
+*.out
+*.test
+dist/
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.backup
+.env
+
+# e2e artifacts
+test/plugins/
+test/dev.tfrc
