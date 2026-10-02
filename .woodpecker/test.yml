@@ -3,7 +3,19 @@ when:
 
 steps:
   - name: lint
-    image: golang:1.25
+    image: artifactapi.k8s.syd1.au.unkin.net/docker-internal/gobuilder:0.1.2-alma9
+    environment:
+      GOCACHE_S3_BUCKET: gocache
+      GOCACHE_S3_REGION: us-east-1
+      GOCACHE_S3_ENDPOINT_URL: https://s3.ceph.unkin.net
+      GOCACHE_S3_PATH_STYLE: "true"
+      GOCACHE_KEY_PREFIX: ci-terraform-provider-ranchervaultsecret
+      GOCACHE_METRICS: "true"
+      GOCACHEPROG: go-cache-plugin --cache-dir=/tmp/gocache
+      AWS_ACCESS_KEY_ID:
+        from_secret: GOCACHE_AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: GOCACHE_AWS_SECRET_ACCESS_KEY
     commands:
       - make lint
     backend_options:
@@ -18,7 +30,19 @@ steps:
             cpu: 2
 
   - name: test
-    image: golang:1.25
+    image: artifactapi.k8s.syd1.au.unkin.net/docker-internal/gobuilder:0.1.2-alma9
+    environment:
+      GOCACHE_S3_BUCKET: gocache
+      GOCACHE_S3_REGION: us-east-1
+      GOCACHE_S3_ENDPOINT_URL: https://s3.ceph.unkin.net
+      GOCACHE_S3_PATH_STYLE: "true"
+      GOCACHE_KEY_PREFIX: ci-terraform-provider-ranchervaultsecret
+      GOCACHE_METRICS: "true"
+      GOCACHEPROG: go-cache-plugin --cache-dir=/tmp/gocache
+      AWS_ACCESS_KEY_ID:
+        from_secret: GOCACHE_AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: GOCACHE_AWS_SECRET_ACCESS_KEY
     commands:
       - make test
     backend_options:
