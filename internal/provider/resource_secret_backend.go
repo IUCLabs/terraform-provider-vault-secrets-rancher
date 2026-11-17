@@ -47,7 +47,7 @@ func (r *secretBackendResource) Metadata(_ context.Context, req resource.Metadat
 
 func (r *secretBackendResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Mounts the Rancher secrets engine and writes its connection config.",
+		Description: "Mounts the Rancher secrets engine and writes its connection config. Destroying it unmounts the engine, revoking all of its leases.",
 		Attributes: map[string]schema.Attribute{
 			"path": schema.StringAttribute{
 				Description: "Mount path for the Rancher secrets engine (e.g. \"rancher\").",
@@ -57,7 +57,7 @@ func (r *secretBackendResource) Schema(_ context.Context, _ resource.SchemaReque
 				},
 			},
 			"plugin": schema.StringAttribute{
-				Description: "Registered plugin name/type to mount.",
+				Description: "Name the plugin is registered under in the plugin catalog. Defaults to `vault-plugin-secrets-rancher`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString(defaultPluginType),
@@ -66,7 +66,7 @@ func (r *secretBackendResource) Schema(_ context.Context, _ resource.SchemaReque
 				},
 			},
 			"description": schema.StringAttribute{
-				Description: "Human-readable description of the mount.",
+				Description: "Human-readable description of the mount. Defaults to empty.",
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString(""),
@@ -80,13 +80,13 @@ func (r *secretBackendResource) Schema(_ context.Context, _ resource.SchemaReque
 				Optional:    true,
 			},
 			"tls_skip_verify": schema.BoolAttribute{
-				Description: "Skip TLS verification of the Rancher server (not recommended).",
+				Description: "Skip TLS verification of the Rancher server (not recommended). Defaults to `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"request_timeout_seconds": schema.Int64Attribute{
-				Description: "HTTP timeout in seconds for calls from the plugin to Rancher.",
+				Description: "HTTP timeout in seconds for calls from the plugin to Rancher. Defaults to `30`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     int64default.StaticInt64(30),

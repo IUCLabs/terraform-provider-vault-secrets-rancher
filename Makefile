@@ -1,10 +1,10 @@
-.PHONY: build install test lint fmt clean tidy package e2e patch minor major check-go
+.PHONY: build install test lint fmt clean tidy package e2e docs patch minor major check-go
 
-BINARY := terraform-provider-ranchervaultsecret
+BINARY := terraform-provider-vault-secrets-rancher
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "0.0.0-dev")
 OS_ARCH := linux_amd64
 INSTALL_VERSION := $(shell echo $(VERSION) | sed 's/^v//')
-INSTALL_DIR := ~/.terraform.d/plugins/git.unkin.net/unkin/ranchervaultsecret/$(INSTALL_VERSION)/$(OS_ARCH)
+INSTALL_DIR := ~/.terraform.d/plugins/registry.terraform.io/iuclabs/vault-secrets-rancher/$(INSTALL_VERSION)/$(OS_ARCH)
 ZIP := $(BINARY)_$(INSTALL_VERSION)_$(OS_ARCH).zip
 
 GO_VERSION_REQUIRED := 1.25
@@ -27,6 +27,9 @@ test: check-go
 
 lint: check-go
 	go vet ./...
+
+docs: check-go
+	go generate ./...
 
 fmt: check-go
 	gofmt -w .

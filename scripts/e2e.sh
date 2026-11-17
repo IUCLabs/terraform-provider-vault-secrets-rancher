@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# End-to-end test for terraform-provider-ranchervaultsecret.
+# End-to-end test for terraform-provider-vault-secrets-rancher.
 #
 # Builds the sibling rancher plugin and this provider, boots Vault + a mock
 # Rancher ext.cattle.io API in Docker, then runs a real `terraform apply` through
@@ -17,7 +17,7 @@ COMPOSE="docker compose -f ${COMPOSE_FILE}"
 TF="${TF:-terraform}"
 E2E_DIR="${ROOT_DIR}/test/e2e"
 PLUGIN_BIN="vault-plugin-secrets-rancher"
-PROVIDER_BIN="terraform-provider-ranchervaultsecret"
+PROVIDER_BIN="terraform-provider-vault-secrets-rancher"
 
 RANCHER_ADDR="http://127.0.0.1:8443"
 export VAULT_ADDR="http://127.0.0.1:8200"
@@ -65,7 +65,7 @@ blue "Writing terraform dev_overrides config"
 cat > "${ROOT_DIR}/test/dev.tfrc" <<EOF
 provider_installation {
   dev_overrides {
-    "git.unkin.net/unkin/ranchervaultsecret" = "${ROOT_DIR}"
+    "registry.terraform.io/iuclabs/vault-secrets-rancher" = "${ROOT_DIR}"
   }
   direct {}
 }

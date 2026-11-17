@@ -1,4 +1,4 @@
-/terraform-provider-ranchervaultsecret
+/terraform-provider-vault-secrets-rancher
 *.zip
 *.out
 *.test

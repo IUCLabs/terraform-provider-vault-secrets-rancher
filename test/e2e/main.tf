@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     rancher = {
-      source = "git.unkin.net/unkin/ranchervaultsecret"
+      source = "IUCLabs/vault-secrets-rancher"
     }
   }
 }

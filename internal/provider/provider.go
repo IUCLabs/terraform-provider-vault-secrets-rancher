@@ -29,7 +29,7 @@ func New(version string) func() provider.Provider {
 }
 
 func (p *rancherProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
-	// The provider's source address is git.unkin.net/unkin/ranchervaultsecret,
+	// The provider's source address is IUCLabs/vault-secrets-rancher,
 	// but its resources are prefixed "rancher_" (declare it in required_providers
 	// under the local name "rancher"), mirroring how google-beta ships google_*.
 	resp.TypeName = "rancher"
@@ -39,6 +39,9 @@ func (p *rancherProvider) Metadata(_ context.Context, _ provider.MetadataRequest
 func (p *rancherProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manage the Rancher token secrets engine (config, service accounts, and roles) on HashiCorp Vault or OpenBao.",
+		MarkdownDescription: "Manage the [Rancher token secrets engine](https://github.com/IUCLabs/vault-plugin-secrets-rancher) " +
+			"(config, service accounts, and roles) on HashiCorp Vault or OpenBao. The plugin must already be registered in the " +
+			"server's plugin catalog.\n\nResources are prefixed `rancher_`, so declare the provider under the local name `rancher`.",
 		Attributes: map[string]schema.Attribute{
 			"address": schema.StringAttribute{
 				Description: "Address of the Vault/OpenBao server. Falls back to the VAULT_ADDR environment variable.",

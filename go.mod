@@ -1,4 +1,4 @@
-module git.unkin.net/unkin/terraform-provider-ranchervaultsecret
+module github.com/IUCLabs/terraform-provider-vault-secrets-rancher
 
 go 1.25
 

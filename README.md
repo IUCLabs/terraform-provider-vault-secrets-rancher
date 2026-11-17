@@ -1,26 +1,40 @@
-# terraform-provider-ranchervaultsecret
+# Terraform Provider for the Vault Rancher Secrets Engine
 
-Terraform provider for the [vault-plugin-secrets-rancher](https://git.unkin.net/unkin/vault-plugin-secrets-rancher)
-secrets engine. It manages the engine's configuration on HashiCorp Vault or
-OpenBao — mounting it, seeding auto-rotated service-account tokens, and defining
-token-minting roles.
+A Terraform provider that manages the
+[vault-plugin-secrets-rancher](https://github.com/IUCLabs/vault-plugin-secrets-rancher)
+secrets engine on HashiCorp Vault or OpenBao: mounting and configuring the
+engine, seeding auto-rotated service accounts, and defining token-minting roles.
 
-The provider's source address is `git.unkin.net/unkin/ranchervaultsecret`; its
-resources are prefixed `rancher_` (declare it under the local name `rancher` in
-`required_providers`).
+- [Provider documentation](docs/index.md)
+- [Secrets engine documentation](https://github.com/IUCLabs/vault-plugin-secrets-rancher)
 
-## Resources
+## Requirements
 
-| Resource | Manages |
-|----------|---------|
-| `rancher_secret_backend` | Mounts the engine and writes `config` (Rancher URL, CA, TLS). |
-| `rancher_secret_backend_service_account` | A seeded, auto-rotated Rancher token (`token`, `token_ttl`, `rotation_period`). |
-| `rancher_secret_backend_role` | A minting role (`service_account`, `cluster_name`, `ttl`, `max_ttl`, `description`). |
+- Terraform 1.0+ or OpenTofu
+- HashiCorp Vault or OpenBao with `vault-plugin-secrets-rancher` registered in
+  the plugin catalog (see the
+  [plugin requirements](https://github.com/IUCLabs/vault-plugin-secrets-rancher#requirements)
+  for tested versions)
+- Go 1.25+ to build from source
 
-## Example
+## Quick Start
+
+Prebuilt provider archives are on the [releases page](https://github.com/IUCLabs/terraform-provider-vault-secrets-rancher/releases).
+
+Resources are prefixed `rancher_`, so declare the provider under the local name
+`rancher`. The Vault address and token fall back to `VAULT_ADDR` and
+`VAULT_TOKEN`.
 
 ```hcl
-provider "rancher" {} # address/token from VAULT_ADDR / VAULT_TOKEN
+terraform {
+  required_providers {
+    rancher = {
+      source = "IUCLabs/vault-secrets-rancher"
+    }
+  }
+}
+
+provider "rancher" {}
 
 resource "rancher_secret_backend" "rancher" {
   path        = "rancher"
@@ -29,11 +43,10 @@ resource "rancher_secret_backend" "rancher" {
 }
 
 resource "rancher_secret_backend_service_account" "admin" {
-  backend         = rancher_secret_backend.rancher.path
-  name            = "admin"
-  token           = var.rancher_seed_token
-  token_ttl       = 90 * 24 * 3600
-  rotation_period = 45 * 24 * 3600
+  backend    = rancher_secret_backend.rancher.path
+  name       = "admin"
+  token      = var.rancher_seed_token
+  token_name = "token-abc12"
 }
 
 resource "rancher_secret_backend_role" "ci" {
@@ -46,18 +59,28 @@ resource "rancher_secret_backend_role" "ci" {
 }
 ```
 
-Then mint a token: `vault read rancher/creds/ci`.
+Then mint a token with `vault read rancher/creds/ci`.
+
+## Resources
+
+| Resource | Manages |
+|----------|---------|
+| [`rancher_secret_backend`](docs/resources/secret_backend.md) | The engine mount and its `config` (Rancher URL, CA, TLS). |
+| [`rancher_secret_backend_service_account`](docs/resources/secret_backend_service_account.md) | A seeded, auto-rotated Rancher token. |
+| [`rancher_secret_backend_role`](docs/resources/secret_backend_role.md) | A role that mints short-lived, lease-bound tokens. |
 
 ## Development
 
 ```sh
-make build      # build the provider binary
-make install    # install into ~/.terraform.d/plugins for local dev_overrides
-make test       # unit tests
-make e2e        # apply real terraform against Vault + the plugin + mock Rancher
-make package    # zip for the artifactapi terraform registry
+make build    # build the provider binary
+make test     # unit tests
+make docs     # regenerate docs/ from the schema and examples/
+make e2e      # apply real Terraform against Vault, the plugin and a mock Rancher (Docker)
 ```
 
-Releases are tag-driven (`make patch|minor|major`): a Woodpecker pipeline zips
-the provider and uploads it to the internal artifactapi terraform registry,
-installable via `source = "git.unkin.net/unkin/ranchervaultsecret"`.
+`make e2e` builds the plugin from a sibling checkout; set `PLUGIN_REPO` to point
+elsewhere.
+
+## License
+
+[MIT](LICENSE)
