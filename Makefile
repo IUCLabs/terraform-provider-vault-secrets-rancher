@@ -1,11 +1,10 @@
-.PHONY: build install test lint fmt clean tidy package e2e docs patch minor major check-go
+.PHONY: build install test lint fmt clean tidy e2e docs patch minor major check-go
 
 BINARY := terraform-provider-vault-secrets-rancher
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "0.0.0-dev")
 OS_ARCH := linux_amd64
 INSTALL_VERSION := $(shell echo $(VERSION) | sed 's/^v//')
 INSTALL_DIR := ~/.terraform.d/plugins/registry.terraform.io/iuclabs/vault-secrets-rancher/$(INSTALL_VERSION)/$(OS_ARCH)
-ZIP := $(BINARY)_$(INSTALL_VERSION)_$(OS_ARCH).zip
 
 GO_VERSION_REQUIRED := 1.25
 GO_VERSION_ACTUAL := $(shell go version | sed 's/go version go\([0-9]*\.[0-9]*\).*/\1/')
@@ -33,11 +32,6 @@ docs: check-go
 
 fmt: check-go
 	gofmt -w .
-
-package: build
-	cp $(BINARY) $(BINARY)_v$(INSTALL_VERSION)
-	python3 -c "import zipfile,sys; z=zipfile.ZipFile(sys.argv[1],'w',zipfile.ZIP_DEFLATED); z.write(sys.argv[2]); z.close()" $(ZIP) $(BINARY)_v$(INSTALL_VERSION)
-	rm $(BINARY)_v$(INSTALL_VERSION)
 
 # End-to-end: boots Vault + mock Rancher + the plugin and applies real terraform.
 e2e:
