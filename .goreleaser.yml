@@ -32,6 +32,8 @@ signs:
     args: ["${artifact}", "${signature}"]
 
 release:
+  use_existing_draft: true
+  mode: keep-existing
   extra_files:
     - glob: terraform-registry-manifest.json
       name_template: "{{ .ProjectName }}_{{ .Version }}_manifest.json"
