@@ -1,0 +1,9 @@
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        "IUCLabs/workflows/*": ref-pin
+        "*": hash-pin
+  archived-uses:
+    ignore:
+      - .pre-commit-config.yaml
