@@ -4,40 +4,27 @@ on:
   push:
     tags: ["v*"]
 
-permissions:
-  contents: write
-  id-token: write
-
-env:
-  VAULT_ADDR: https://vault.service.consul:8200
-  ARTIFACTAPI: https://artifactapi.k8s.syd1.au.unkin.net
+permissions: {}
 
 jobs:
   release:
+    uses: IUCLabs/workflows/.github/workflows/release-terraform-provider.yml@v0.1.0
+    permissions:
+      contents: write
+      id-token: write
+    with:
+      vault_role: release-shared
+
+  # artifactapi consumers still resolve the pre-rename filename and path
+  legacy-upload:
+    needs: release
     runs-on: iuclabs-release
+    permissions:
+      id-token: write
+    env:
+      VAULT_ADDR: https://vault.service.consul:8200
+      ARTIFACTAPI: https://artifactapi.k8s.syd1.au.unkin.net
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
-        with:
-          go-version-file: go.mod
-      - uses: hashicorp/vault-action@892a26828f195e65540a40b4768ae4571f51ebfc # v4.0.0
-        with:
-          url: ${{ env.VAULT_ADDR }}
-          method: jwt
-          path: jwt/github/iuclabs
-          role: release
-          jwtGithubAudience: ${{ env.VAULT_ADDR }}
-          exportToken: true
-      - uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
-        with:
-          distribution: goreleaser
-          version: v2.20.2
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # fresh login: vault tokens live 15m and the build may eat most of the first one
       - uses: hashicorp/vault-action@892a26828f195e65540a40b4768ae4571f51ebfc # v4.0.0
         with:
           url: ${{ env.VAULT_ADDR }}
@@ -47,13 +34,14 @@ jobs:
           jwtGithubAudience: ${{ env.VAULT_ADDR }}
           secrets: |
             identity/oidc/token/artifactapi-writer token | ARTIFACTAPI_TOKEN
-      - name: Upload linux_amd64 to artifactapi
+      - name: Upload linux_amd64 to artifactapi under the legacy name
         run: |
           v="${GITHUB_REF_NAME#v}"
-          # artifactapi keeps the pre-rename filename that consumers resolve
+          src="${GITHUB_REPOSITORY#*/}_${v}_linux_amd64.zip"
           file="terraform-provider-ranchervaultsecret_${v}_linux_amd64.zip"
-          cp "dist/terraform-provider-vault-secrets-rancher_${v}_linux_amd64.zip" "dist/${file}"
+          curl -sSfL --cacert /etc/vault-ca/ca.crt -o "${file}" \
+            "${ARTIFACTAPI}/api/v1/remote/github/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/${src}"
           curl -sSf --cacert /etc/vault-ca/ca.crt -X PUT \
             -H "Authorization: Bearer ${ARTIFACTAPI_TOKEN}" -H "Content-Type: application/zip" \
-            --data-binary "@dist/${file}" \
+            --data-binary "@${file}" \
             "${ARTIFACTAPI}/api/v2/remotes/terraform-unkin/files/unkin/ranchervaultsecret/${file}"
